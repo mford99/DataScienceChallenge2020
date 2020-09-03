@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib
 
+#Read-in the data as a pandas dataframe
 DataScienceCSV = pd.read_csv("DataScience.csv")
 
 print(DataScienceCSV["order_amount"].describe())
