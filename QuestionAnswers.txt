@@ -30,7 +30,7 @@ Question 1:
 			
 			This showed me that 90% of all values are found below 531.0
 			
-			Thus, to get a more accurate representation of the data I filtered it to only the data points that lie in within 2x the interquartile range"
+			Thus, to get a more accurate representation of the data, I filtered it to only the data points that lie in within 2x the interquartile range
 			
 				q1 = DataScienceCSV["order_amount"].quantile(q=0.25)
 				q2 = DataScienceCSV["order_amount"].quantile(q=0.5)
@@ -60,7 +60,7 @@ Question 1:
 		b)
 		
 			A better metric for this dataset would be the median as this will better describe the 'typical' order value. The larger
-			orders are atypical for shoes
+			orders are atypical for shoes as they are likeely suppliers buying shoes in bulk.
 			
 		
 		c) 
@@ -118,7 +118,15 @@ Question 2:
 		
 		A single longer query could be used as follows:
 		
-		SELECT LastName FROM Employees Where EmployeeID IN (SELECT EmployeeID FROM Orders GROUP BY EmployeeID ORDER BY COUNT(*) DESC LIMIT 1)
+		SELECT LastName 
+		FROM Employees 
+		Where EmployeeID IN 
+		(
+		SELECT EmployeeID 
+		FROM Orders 
+		GROUP BY EmployeeID 
+		ORDER BY COUNT(*) 
+		DESC LIMIT 1)
 		
 		This results in the same answer
 	
@@ -143,6 +151,29 @@ Question 2:
 		
 		
 		Thus, the product that was ordered the most from customers in Germany was Boston Crab Meat
+		
+		As a single long query this is:
+		
+		SELECT ProductName 
+		From Products 
+		Where ProductID IN 
+		(
+		SELECT ProductID 
+		FROM OrderDetails 
+		WHERE OrderID IN 
+		(
+		Select OrderId 
+		From Orders 
+		WHERE CustomerID IN 
+		(
+		SELECT CustomerID 
+		From Customers 
+		WHERE Country="Germany")) 
+		GROUP BY ProductID 
+		ORDER By SUM(Quantity) 
+		DESC LIMIT 1)
+		
+		This gives the same answer as above
 		
 		
 		
