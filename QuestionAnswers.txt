@@ -1,0 +1,150 @@
+Question 1:
+
+		a) Firstly, I decided to check the AOV answer that was given by using python. Specificially, I used the Pandas library
+		
+				import pandas as pd
+				import numpy as np
+
+				DataScienceCSV = pd.read_csv("DataScience.csv")
+
+				print(DataScienceCSV["order_amount"].describe())
+				
+			The information that it gave me was as follows:
+				
+				count      5000.000000
+				mean       3145.128000
+				std       41282.539349
+				min          90.000000
+				25%         163.000000
+				50%         284.000000
+				75%         390.000000
+				max      704000.000000
+			
+			The calculated AOV must be the mean value of the order amount. However, the high stdev shows me that there is
+			lots of variation in the data. The minimum value being 90 and the maximum value being 704000 further confirms that large
+			values are shifting the mean value.
+			
+			As a final check, I calculated the 90 percentile:
+				
+				print(DataScienceCSV["order_amount"].quantile(q=0.9))
+			
+			This showed me that 90% of all values are found below 531.0
+			
+			Thus, to get a more accurate representation of the data I filtered it to only the data points that lie in within 2x the interquartile range"
+			
+				q1 = DataScienceCSV["order_amount"].quantile(q=0.25)
+				q2 = DataScienceCSV["order_amount"].quantile(q=0.5)
+				q3 = DataScienceCSV["order_amount"].quantile(q=0.75)
+				IQR = q3 - q1
+					
+				FilteredData = DataScienceCSV[(DataScienceCSV["order_amount"] < q2 + IQR * 2) & (DataScienceCSV["order_amount"] > q2 - IQR * 2)]
+				print("The filered data is:\n")
+				print(FilteredData["order_amount"].describe())
+			
+			The filtered data is has the following properties:
+				
+				The filered data is:
+
+				count    4738.000000
+				mean      283.814268
+				std       132.061996
+				min        90.000000
+				25%       161.000000
+				50%       272.000000
+				75%       362.000000
+				max       624.000000
+			
+			The new mean is now 283.81 which is a more reasonable result. Furthermore, the min, max, and std are much better.
+			
+			Thus, this filtered data is a much better way to represent the average order 
+		b)
+		
+			A better metric for this dataset would be the median as this will better describe the 'typical' order value. The larger
+			orders are atypical for shoes
+			
+		
+		c) 
+			The median for this data was calculated by using pandas:
+			
+				print(FilteredData["order_amount"].median())
+			
+			This value is 280.0
+			
+		
+
+
+Question 2:
+	
+	a)
+		Firstly, I looked at what information was in the Orders table by using the following query:
+		
+		SELECT * FROM Orders
+		
+		This revealed to me that each shipper wasn't listed by their name but their ShipperID
+		Therefore, I had to figure out which shipperID corresponded to SpeedyExpress. This was done with 
+		the following query
+		
+		SELECT ShipperID FROM Shippers WHERE ShipperName = "Speedy Express"
+		
+		This showed me that the ShipperID for Speedy Express was 1.
+		
+		From there, he query used to obtain this answer was:
+		SELECT COUNT(*) FROM Orders WHERE ShipperID = 1
+		
+		The final answer is 54
+		
+		Alternatively, a single longer query could be used which is below:
+		
+		SELECT Shippers.ShipperName, COUNT(Orders.OrderID)FROM Orders
+		LEFT JOIN Shippers ON Orders.ShipperID = Shippers.ShipperID 
+		WHERE ShipperName = "Speedy Express"
+		GROUP BY ShipperName;
+		
+		This results in the same answer
+
+	
+	b)
+		The first query was to determine which EmployeeID has the most orders.
+		This was done with the following query:
+		SELECT EmployeeID, COUNT(*) FROM Orders GROUP BY EmployeeID ORDER BY COUNT(*) DESC LIMIT 1
+		
+		This showed me that the employee with an ID of 4 had the most orders
+		
+		From there, the employee with this ID was found with the following query:
+		
+		SELECT LastName FROM [Employees] Where EmployeeID = 4
+		
+		This gave me an answer of Peacock
+		
+		A single longer query could be used as follows:
+		
+		SELECT LastName FROM Employees Where EmployeeID IN (SELECT EmployeeID FROM Orders GROUP BY EmployeeID ORDER BY COUNT(*) DESC LIMIT 1)
+		
+		This results in the same answer
+	
+	c)
+	
+		Firstly, I had to determine which customerID's belong to customers in GERMANY.
+		
+		This was done with the following query:
+		SELECT CustomerID From Customers WHERE Country="Germany"
+		
+		Next, each order that came from a German customer was needed which was done with the following query:
+		Select OrderId From Orders WHERE CustomerID IN (SELECT CustomerID From Customers WHERE Country="Germany")
+		
+		From there, the product that was ordered the most had to be determined which was done with the following query:
+		
+		SELECT ProductID, SUM(Quantity) FROM OrderDetails WHERE OrderID IN (Select OrderId From Orders WHERE CustomerID IN (SELECT CustomerID From Customers WHERE Country="Germany")) GROUP BY ProductID ORDER By SUM(Quantity) DESC LIMIT 1
+		
+		This showed me that the product that was ordered the most from customers in Germany was productID 40
+		
+		The final answer was simply obtained by running the last query:
+		SELECT ProductName FROM Products WHERE ProductID = 40
+		
+		
+		Thus, the product that was ordered the most from customers in Germany was Boston Crab Meat
+		
+		
+		
+	
+		
